@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Mini JSONBin Interaktif</title>
+  <style>
+    body{font-family:system-ui;margin:1.5rem;max-width:900px}
+    #editor{width:100%;height:400px;border:1px solid #ddd;font-family:monospace;padding:0.5rem;overflow:auto;}
+    input,button{margin:.25rem 0;padding:.4rem}
+    .row{display:flex;gap:.5rem;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+<h1>Mini JSONBin Interaktif (GitHub Repo via API)</h1>
+
+<label>Nama file (kosong untuk create baru)</label><br>
+<input id="filename" placeholder="data/bin-123.json" style="width:100%"><br>
+
+<div id="editor" contenteditable="true">{ "hello": "world" }</div><br>
+
+<div class="row">
+  <button onclick="createBin()">Create Baru</button>
+  <button onclick="updateBin()">Update</button>
+  <button onclick="readBin()">Read</button>
+  <button onclick="deleteBin()">Delete</button>
+  <button onclick="listBins()">List Semua</button>
+</div>
+
+<pre id="out" style="background:#f6f6f6;padding:1rem;border:1px solid #ddd;white-space:pre-wrap;"></pre>
+
+<script>
+let CONFIG;
+
+// Load config dari JSON API publik
+async function loadConfig() {
+  try {
+    const res = await fetch("https://jsonbin-clone.bisay510.workers.dev/bd9aa0c6-469a-4808-8b5d-31491c30d678");
+    CONFIG = await res.json();
+    log("Config loaded from API");
+  } catch (e) {
+    alert("Gagal load config dari API");
+    console.error(e);
+  }
+}
+
+function log(x){document.getElementById('out').textContent = typeof x==='string'?x:JSON.stringify(x,null,2);}
+function headers(){
+  return {
+    "Authorization":"token "+CONFIG.TOKEN,
+    "Accept":"application/vnd.github+json",
+    "Content-Type":"application/json"
+  };
+}
+async function api(path,opts){ 
+  const r = await fetch("https://api.github.com"+path, opts);
+  const txt = await r.text(); 
+  try { return JSON.parse(txt); } 
+  catch { return txt; }
+}
+
+function getEditorJSON(){ 
+  try{ return JSON.parse(document.getElementById('editor').innerText); } 
+  catch(e){ alert("JSON invalid"); throw e; }
+}
+function setEditorJSON(obj){ document.getElementById('editor').innerText=JSON.stringify(obj,null,2); }
+
+/* === CRUD === */
+async function createBin(){
+  const data = getEditorJSON();
+  const fname = "data/bin-" + Date.now() + ".json";
+  const body = {message:"Create bin", content:btoa(JSON.stringify(data,null,2)), branch:CONFIG.BRANCH};
+  const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${fname}`, {method:"PUT", headers:headers(), body:JSON.stringify(body)});
+  log(res);
+  document.getElementById('filename').value = fname;
+}
+
+async function readBin(){
+  const f = document.getElementById('filename').value.trim();
+  if(!f) return alert("Masukkan nama file");
+  const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${f}?ref=${CONFIG.BRANCH}`, {headers:headers()});
+  if(res.content) { setEditorJSON(JSON.parse(atob(res.content))); log(res); } else log(res);
+}
+
+async function updateBin(){
+  const f = document.getElementById('filename').value.trim();
+  if(!f) return alert("Masukkan nama file");
+  const existing = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${f}?ref=${CONFIG.BRANCH}`, {headers:headers()});
+  if(!existing.sha) return log(existing);
+  const data = getEditorJSON();
+  const body = {message:"Update bin", content:btoa(JSON.stringify(data,null,2)), branch:CONFIG.BRANCH, sha:existing.sha};
+  const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${f}`, {method:"PUT", headers:headers(), body:JSON.stringify(body)});
+  log(res);
+}
+
+async function deleteBin(){
+  const f = document.getElementById('filename').value.trim();
+  if(!f) return alert("Masukkan nama file");
+  const existing = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${f}?ref=${CONFIG.BRANCH}`, {headers:headers()});
+  if(!existing.sha) return log(existing);
+  const body = {message:"Delete bin", sha:existing.sha, branch:CONFIG.BRANCH};
+  const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${f}`, {method:"DELETE", headers:headers(), body:JSON.stringify(body)});
+  log(res);
+}
+
+async function listBins(){
+  const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/data?ref=${CONFIG.BRANCH}`, {headers:headers()});
+  if(Array.isArray(res)) log(res.map(f=>({name:f.name,path:f.path,size:f.size})));
+  else log(res);
+}
+
+// Load config dari API ketika halaman siap
+loadConfig();
+</script>
+</body>
+</html>
