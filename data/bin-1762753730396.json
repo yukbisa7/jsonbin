@@ -1,3 +1,35 @@
-{
-  "hello": "world"
-}
+[
+  {
+    "id": 1,
+    "judul": "Parasite",
+    "tahun": 2019,
+    "sutradara": "Bong Joon-ho",
+    "genre": [
+      "Thriller",
+      "Black Comedy"
+    ],
+    "rating": 8.5
+  },
+  {
+    "id": 2,
+    "judul": "Inception",
+    "tahun": 2010,
+    "sutradara": "Christopher Nolan",
+    "genre": [
+      "Sci-Fi",
+      "Action"
+    ],
+    "rating": 8.8
+  },
+  {
+    "id": 3,
+    "judul": "Ada Apa Dengan Cinta?",
+    "tahun": 2002,
+    "sutradara": "Rudy Soedjarwo",
+    "genre": [
+      "Drama",
+      "Romance"
+    ],
+    "rating": 7.5
+  }
+]
