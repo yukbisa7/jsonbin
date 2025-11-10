@@ -2,9 +2,9 @@
 <html>
 <head>
   <meta charset="utf-8"/>
-  <title>Mini JSONBin Interaktif (Dark Mode Refined)</title>
+  <title>Mini JSONBin Interaktif (GitHub Repo via API)</title>
   <style>
-    /* === Palet Warna Dark Mode (Mirip Gambar) === */
+    /* === Palet Warna Dark Mode === */
     :root {
       --bg-color: #24243e; 
       --surface-color: #1e1e2d; 
@@ -16,8 +16,8 @@
       --danger-color: #ff4d4f; 
       --padding-unit: 0.75rem;
       --radius: 8px;
-      --list-row-bg: #2d2d4f; /* Warna latar belakang baris di daftar */
-      --list-row-hover: #3a3a63; /* Warna hover baris */
+      --list-row-bg: #2d2d4f; 
+      --list-row-hover: #3a3a63; 
     }
 
     /* === BASE & TYPOGRAPHY === */
@@ -52,7 +52,7 @@
     .input-group {
         margin-bottom: 1.5rem;
     }
-    #filename, .project-name {
+    #filename, .project-name, #new-project-name {
       width: 100%;
       box-sizing: border-box;
       padding: var(--padding-unit);
@@ -63,7 +63,7 @@
       margin-top: 0.5rem;
     }
 
-    /* === EDITOR & TABS (sama seperti sebelumnya) === */
+    /* === EDITOR & TABS === */
     .editor-section {
         margin-bottom: 1.5rem;
     }
@@ -102,7 +102,6 @@
         color: var(--text-color);
     }
     
-
     #editor {
       width: 100%;
       height: 400px;
@@ -143,8 +142,7 @@
         background-color: #555577;
     }
 
-
-    /* Tombol Utama (Update & Delete) - sama seperti sebelumnya */
+    /* Tombol Utama (Update & Delete) */
     .main-action-group {
         display: flex;
         justify-content: center;
@@ -168,7 +166,7 @@
         opacity: 0.8;
     }
 
-    /* Tombol Sekunder (Create, Read, List) - sama seperti sebelumnya */
+    /* Tombol Sekunder (Create, Read, List) */
     .secondary-row {
       display: flex;
       gap: 1rem;
@@ -190,7 +188,7 @@
     /* === OUTPUT / LIST TABLE STYLES BARU === */
     #out {
       background-color: var(--surface-color);
-      padding: 0; /* Hapus padding luar */
+      padding: 0; 
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
       white-space: pre-wrap;
@@ -225,7 +223,7 @@
         padding: var(--padding-unit);
         font-weight: 600;
         border-bottom: 1px solid var(--border-color);
-        position: sticky; /* Sticky header saat scroll */
+        position: sticky; 
         top: 0;
     }
 
@@ -243,20 +241,20 @@
         background-color: var(--list-row-hover);
     }
     
-    /* Kolom Aksi */
     .action-cell {
         display: flex;
         gap: 0.5rem;
-        justify-content: flex-end; /* Aksi ke kanan */
+        justify-content: flex-end; 
     }
     
     .action-cell button {
         padding: 0.4rem 0.8rem;
         font-size: 0.8rem;
         font-weight: 500;
+        margin-left: 0.5rem; /* Jarak antar tombol aksi */
     }
     .view-edit-btn {
-        background-color: var(--primary-color); /* Warna untuk View & Edit */
+        background-color: var(--primary-color); 
     }
     .view-edit-btn:hover {
         background-color: var(--primary-hover);
@@ -267,19 +265,87 @@
     .action-cell .delete-btn:hover {
         opacity: 0.8;
     }
-
+    .copy-link-btn {
+        background-color: #3b3b5c;
+    }
+    .copy-link-btn:hover {
+        background-color: #4a4a6d;
+    }
+    
+    /* Table Editor (Raw/Table) Styles */
+    #data-table th {
+        border: 1px solid var(--border-color); 
+        padding: 8px; 
+        background-color: #33334f; 
+        text-align: left;
+        font-size: 0.9rem;
+    }
+    #data-table td {
+        border: 1px solid var(--border-color); 
+        padding: 8px; 
+        color: #70a0d0;
+        font-size: 0.85rem;
+        position: relative;
+    }
+    #data-table td[contenteditable="true"] {
+        border: 1px solid var(--border-color);
+        cursor: text;
+        outline: none;
+        transition: background-color 0.2s;
+        min-width: 50px;
+    }
+    #data-table td[contenteditable="true"]:focus {
+        background-color: #3b3b5c;
+        box-shadow: 0 0 0 2px var(--primary-color);
+    }
+    .row-delete-btn {
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        padding: 0 0.5rem;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        right: 0;
+        cursor: pointer;
+        opacity: 0;
+        transition: opacity 0.2s;
+        font-weight: bold;
+        line-height: 24px;
+        font-size: 1.2rem;
+        border-radius: 0;
+    }
+    #data-table tr:hover .row-delete-btn {
+        opacity: 1;
+    }
+    .row-delete-btn:hover {
+        opacity: 0.8 !important;
+    }
   </style>
 </head>
 <body>
 <h1>Mini JSONBin Interaktif (GitHub Repo via API)</h1>
 
-<!-- Input Project Name/Context -->
+<!-- Tombol Sekunder (di pindahkan ke atas agar mirip My Bins) -->
+<div class="secondary-row">
+    <button onclick="createBin()">Create Baru</button>
+    <button onclick="readBin()">Read</button>
+    <button onclick="listBins()">List Semua</button>
+</div>
+
+<!-- Input Project Name/Context (Global) -->
 <div class="input-group">
     <label>Project Name</label>
     <input type="text" class="project-name" value="json Api github" disabled>
 </div>
 
-<!-- Input Nama File -->
+<!-- Input Nama Project BARU -->
+<div class="input-group">
+    <label for="new-project-name">Nama Project (untuk Create Baru)</label>
+    <input id="new-project-name" placeholder="Contoh: Daftar-Film">
+</div>
+
+<!-- Input Nama File (untuk Read/Update/Delete) -->
 <div class="input-group">
     <label for="filename">Nama file (kosong untuk create baru)</label>
     <input id="filename" placeholder="data/bin-123.json">
@@ -303,7 +369,6 @@
     <!-- Container untuk Tabel (Awalnya tersembunyi) -->
     <div id="editor-table" style="display:none;">
         <div id="table-view" style="padding:0; border: none; border-top: none; border-bottom-left-radius: var(--radius); border-bottom-right-radius: var(--radius); overflow-x: auto;">
-            <!-- Actions di dalam Table View -->
             <p style="color:var(--danger-color); font-weight: bold; padding: var(--padding-unit); margin: 0;">PERINGATAN: Edit Tabel. Wajib klik "Raw" sebelum "Update Bin" agar perubahan tersimpan.</p>
             <div class="table-actions" style="padding: 0 var(--padding-unit);">
                 <button onclick="addRow()">Tambah Row</button>
@@ -319,19 +384,11 @@
     <button onclick="deleteBin()" class="main-btn delete-btn">Delete</button>
 </div>
 
-<!-- Tombol Sekunder (CRUD lainnya) -->
-<div class="secondary-row">
-    <button onclick="createBin()">Create Baru</button>
-    <button onclick="readBin()">Read</button>
-    <button onclick="listBins()">List Semua</button>
-</div>
-
 <div id="out">Output log akan muncul di sini...</div>
 
 <script>
 let CONFIG;
 
-// DOM elements
 const editorElem = document.getElementById('editor');
 const editorRawDiv = document.getElementById('editor-raw');
 const editorTableDiv = document.getElementById('editor-table');
@@ -346,11 +403,9 @@ let currentHeaders = [];
 function log(x, isHtml = false){
     const outElement = document.getElementById('out');
     if (isHtml) {
-        // Hapus padding dan terapkan style List Table Container
         outElement.style.padding = '0'; 
         outElement.innerHTML = x;
     } else if (typeof x === 'string') {
-        // Kembalikan padding untuk log teks biasa
         outElement.style.padding = '1rem'; 
         outElement.textContent = x;
     } else {
@@ -358,6 +413,24 @@ function log(x, isHtml = false){
         outElement.textContent = JSON.stringify(x, null, 2);
     }
 }
+
+// Fungsi untuk menyalin teks ke clipboard
+function copyToClipboard(text, path) {
+    if (!navigator.clipboard) {
+        alert('Browser Anda tidak mendukung Copy to Clipboard');
+        return;
+    }
+    
+    // Asumsi CONFIG.PAGES_URL_BASE sudah dimuat
+    const fullUrl = CONFIG.PAGES_URL_BASE + path;
+
+    navigator.clipboard.writeText(fullUrl).then(function() {
+        log(`Link berhasil disalin: ${fullUrl}`, false);
+    }).catch(function(err) {
+        log('Gagal menyalin link: ' + err, false);
+    });
+}
+
 
 function tryParse(value) {
     if (value === undefined || value === null) return null;
@@ -368,7 +441,7 @@ function tryParse(value) {
 }
 
 
-// === Fungsi Editor Mode (Tidak diubah, hanya memastikan logika tetap benar) ===
+// === Fungsi Editor Mode (Tidak diubah) ===
 function switchEditorMode(mode) {
     if (mode === currentMode) return;
     if (currentMode === 'table') getTableDataAndReconstructJSON();
@@ -392,17 +465,6 @@ function switchEditorMode(mode) {
     currentMode = mode;
 }
 
-function addRow() { /* Logic sama */ }
-function deleteRow(btn) { /* Logic sama */ }
-function renderEditableTable() { /* Logic sama */ }
-function getTableDataAndReconstructJSON() { /* Logic sama */ }
-
-// --- (Sisipkan kode lengkap fungsi addRow, deleteRow, renderEditableTable, getTableDataAndReconstructJSON dari jawaban sebelumnya di sini) ---
-// Note: Karena batasan panjang, saya tidak mengulang semua kode tabel di sini,
-// asumsikan fungsi-fungsi tersebut sudah ada di kode Anda, dan kini hanya fungsi listBins yang dirombak.
-// --------------------------------------------------------------------------------------------------------------------------------------------------
-
-// Menambahkan Baris ke Tabel
 function addRow() {
     if (currentHeaders.length === 0) {
         alert("Tidak bisa menambah baris. Silakan muat data yang merupakan Array Objek terlebih dahulu.");
@@ -421,14 +483,12 @@ function addRow() {
     tableBody.innerHTML += newRowHtml;
 }
 
-// Menghapus Baris dari Tabel
 function deleteRow(btn) {
     if (!confirm("Hapus baris ini?")) return;
     const row = btn.parentNode.parentNode;
     row.parentNode.removeChild(row);
 }
 
-// Fungsi untuk merender Tabel yang dapat di-edit
 function renderEditableTable() {
     let data;
     try {
@@ -440,7 +500,6 @@ function renderEditableTable() {
 
     const isArrayOfObjects = Array.isArray(data) && data.every(item => typeof item === 'object' && item !== null);
     
-    // Clear old table but keep the message and buttons
     const message = tableViewDiv.querySelector('p').outerHTML;
     const actions = tableViewDiv.querySelector('.table-actions').outerHTML;
     tableViewDiv.innerHTML = message + actions;
@@ -450,20 +509,18 @@ function renderEditableTable() {
         
         let tableHtml = `<div style="overflow-x: auto; padding: 0 var(--padding-unit) var(--padding-unit);"><table id="data-table"><thead><tr>`;
         
-        // Header
         currentHeaders.forEach(h => {
             tableHtml += `<th>${h}</th>`;
         });
-        tableHtml += `<th style="width: 20px;"></th></tr></thead><tbody>`; // Kolom untuk tombol delete
+        tableHtml += `<th style="width: 20px;"></th></tr></thead><tbody>`; 
 
-        // Baris data
         data.forEach(item => {
             tableHtml += `<tr>`;
             currentHeaders.forEach(h => {
                 let value = item[h] !== undefined ? item[h] : '';
                 if (typeof value === 'object' && value !== null) {
                     value = JSON.stringify(value);
-                    tableHtml += `<td data-key="${h}" data-type="string">${value}</td>`; // Non-editable
+                    tableHtml += `<td data-key="${h}" data-type="string">${value}</td>`; 
                 } else {
                     tableHtml += `<td data-key="${h}" data-type="${typeof value}" contenteditable="true">${value}</td>`;
                 }
@@ -501,7 +558,6 @@ function renderEditableTable() {
     }
 }
 
-// Fungsi untuk membaca data dari tabel dan merekonstruksi JSON
 function getTableDataAndReconstructJSON() {
     const table = document.getElementById('data-table');
     if (!table) return;
@@ -560,27 +616,56 @@ function getTableDataAndReconstructJSON() {
 }
 
 
-// --- Sisanya (loadConfig, CRUD, dll.) ---
+// === Koneksi dan CRUD ===
 
 async function loadConfig() {
   try {
-    const res = await fetch("https://jsonbin-clone.bisay510.workers.dev/bd9aa0c6-469a-4808-8b5d-31491c30d678");
+    const url = "https://jsonbin-clone.bisay510.workers.dev/bd9aa0c6-469a-4808-8b5d-31491c30d678";
+    const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error(`Gagal fetch config. Status: ${res.status}`);
+    }
     CONFIG = await res.json();
+    
+    if (!CONFIG.USERNAME || !CONFIG.REPO || !CONFIG.TOKEN) {
+        throw new Error("Config JSON tidak lengkap (USERNAME, REPO, atau TOKEN hilang).");
+    }
+
     CONFIG.PAGES_URL_BASE = `https://${CONFIG.USERNAME}.github.io/${CONFIG.REPO}/`; 
+    
     log("Config loaded successfully! Ready to use.");
   } catch (e) {
-    log("Gagal load config dari API. Periksa konsol untuk detail. Pastikan API URL benar.");
-    console.error(e);
+    const errorMsg = `ERROR: Gagal load config dari API. Periksa Console (F12). Pastikan URL config aktif dan berisi TOKEN GitHub yang valid. Detail: ${e.message}`;
+    log(errorMsg);
+    console.error("Config Load Error:", e);
   }
 }
 
-function headers(){ /* ... */ }
-async function api(path,opts){ /* ... */ }
-function getEditorJSON(){ try{ return JSON.parse(editorElem.innerText); } catch(e){ alert("JSON invalid"); throw e; } }
+function headers(){
+  return {
+    "Authorization":"token "+CONFIG.TOKEN,
+    "Accept":"application/vnd.github+json",
+    "Content-Type":"application/json"
+  };
+}
+async function api(path,opts){ 
+  const r = await fetch("https://api.github.com"+path, opts);
+  const txt = await r.text(); 
+  try { 
+    if (r.status >= 400) return JSON.parse(txt); 
+    return JSON.parse(txt); 
+  } 
+  catch { return txt; }
+}
+
+function getEditorJSON(){ 
+  try{ return JSON.parse(editorElem.innerText); } 
+  catch(e){ alert("JSON invalid"); throw e; }
+}
 function setEditorJSON(obj){ editorElem.innerText=JSON.stringify(obj,null,2); }
 
 async function loadPathToInput(path) {
-    if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+    if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
     switchEditorMode('raw');
     document.getElementById('filename').value = path;
     await readBin();
@@ -588,7 +673,7 @@ async function loadPathToInput(path) {
 }
 
 async function confirmAndDelete(path) {
-    if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+    if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
     if (confirm(`Anda yakin ingin MENGHAPUS file ini: ${path}?`)) {
         document.getElementById('filename').value = path;
         await deleteBin();
@@ -599,11 +684,28 @@ async function confirmAndDelete(path) {
 }
 
 async function createBin(){
-  if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+  if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
+  
+  log("Membuat file baru...", false); 
+
   switchEditorMode('raw');
   const data = getEditorJSON();
-  const fname = "data/bin-" + Date.now() + ".json";
-  const body = {message:"Create bin", content:btoa(JSON.stringify(data,null,2)), branch:CONFIG.BRANCH};
+  
+  // --- LOGIC NAMA FILE BARU ---
+  const projectName = document.getElementById('new-project-name').value.trim();
+  let fname;
+  
+  if (projectName) {
+      const safeProjectName = projectName.replace(/[^a-zA-Z0-9-]/g, '-').replace(/-+/g, '-').toLowerCase();
+      fname = `data/${safeProjectName}-${Date.now()}.json`;
+      var commitMessage = `Create bin: ${safeProjectName}`;
+  } else {
+      fname = "data/bin-" + Date.now() + ".json";
+      var commitMessage = "Create bin: untitled";
+  }
+  // --- AKHIR LOGIC NAMA FILE BARU ---
+  
+  const body = {message: commitMessage, content:btoa(JSON.stringify(data,null,2)), branch:CONFIG.BRANCH};
   const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/${fname}`, {method:"PUT", headers:headers(), body:JSON.stringify(body)});
   
   document.getElementById('filename').value = fname;
@@ -611,13 +713,16 @@ async function createBin(){
   if (res.content) {
       const pageUrl = CONFIG.PAGES_URL_BASE + fname;
       log(`Bin created successfully! New File: ${fname}\nLink Akses: ${pageUrl}`, false); 
+      
+      document.getElementById('new-project-name').value = ''; 
   } else {
       log(res); 
   }
 }
 
 async function readBin(){
-  if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+  if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
+  log("Membaca file...", false); 
   switchEditorMode('raw');
   const f = document.getElementById('filename').value.trim();
   if(!f) return alert("Masukkan nama file");
@@ -626,7 +731,8 @@ async function readBin(){
 }
 
 async function updateBin(){
-  if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+  if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
+  log("Mengupdate file...", false); 
   switchEditorMode('raw'); 
   const f = document.getElementById('filename').value.trim();
   if(!f) return alert("Masukkan nama file");
@@ -639,7 +745,8 @@ async function updateBin(){
 }
 
 async function deleteBin(){
-  if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+  if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
+  log("Menghapus file...", false); 
   switchEditorMode('raw');
   const f = document.getElementById('filename').value.trim();
   if(!f) return alert("Masukkan nama file");
@@ -653,9 +760,9 @@ async function deleteBin(){
   }
 }
 
-// === FUNGSI LIST BINS BARU (Menampilkan dalam format tabel) ===
 async function listBins(){
-  if (!CONFIG) return alert("Config belum dimuat. Tunggu sebentar.");
+  if (!CONFIG) return alert("Config belum dimuat. Cek log error.");
+  log("Memuat daftar file...", false); 
   switchEditorMode('raw'); 
 
   const res = await api(`/repos/${CONFIG.USERNAME}/${CONFIG.REPO}/contents/data?ref=${CONFIG.BRANCH}`, {headers:headers()});
@@ -666,9 +773,9 @@ async function listBins(){
                         <table id="list-table">
                           <thead>
                             <tr>
-                              <th>PROJECT</th>
-                              <th style="width: 20%;">CREATED AT (Approx)</th>
-                              <th style="width: 25%; text-align: right;">ACTIONS</th>
+                              <th style="width: 35%;">PROJECT</th>
+                              <th style="width: 15%;">CREATED AT (Approx)</th>
+                              <th style="width: 30%; text-align: right;">ACTIONS</th>
                             </tr>
                           </thead>
                           <tbody>`;
@@ -679,7 +786,21 @@ async function listBins(){
           htmlList += `<tr><td colspan="3" style="text-align: center;">Tidak ada file JSON ditemukan di folder data/.</td></tr>`;
       } else {
           jsonFiles.forEach(f => {
-              // Extract timestamp dari nama file (misal: bin-1702123456789.json)
+              const fullPath = f.path; // data/film-sample-1762753730396.json
+              const fileUrl = CONFIG.PAGES_URL_BASE + fullPath;
+
+              // 1. Membersihkan Nama Proyek (Hanya menyisakan nama project tanpa timestamp)
+              let projectNameDisplay = f.name.replace('.json', '');
+              const timestampIndex = projectNameDisplay.search(/-\d{13}$/); // Cari pola -TIMESTAMP
+              if (timestampIndex !== -1) {
+                  projectNameDisplay = projectNameDisplay.substring(0, timestampIndex);
+              }
+              // Jika nama proyek hasil pembersihan kosong, gunakan nama file lengkap
+              if (projectNameDisplay === '' || projectNameDisplay.startsWith('bin')) {
+                  projectNameDisplay = f.name;
+              }
+
+
               const match = f.name.match(/(\d+)/);
               let createdDate = 'N/A';
               if (match && match[1]) {
@@ -691,11 +812,15 @@ async function listBins(){
 
               htmlList += `
                 <tr>
-                    <td>${f.name}</td>
+                    <td>${projectNameDisplay}</td>
                     <td>${createdDate}</td>
                     <td class="action-cell">
-                        <button class="view-edit-btn" onclick="loadPathToInput('${f.path}')">View & Edit</button>
-                        <button class="delete-btn" onclick="confirmAndDelete('${f.path}')">Delete</button>
+                        <!-- Tombol Copy Link API -->
+                        <button class="copy-link-btn" onclick="copyToClipboard('${fullPath}', '${fullPath}')">Copy Link</button>
+                        <!-- Tombol View & Edit -->
+                        <button class="view-edit-btn" onclick="loadPathToInput('${fullPath}')">View & Edit</button>
+                        <!-- Tombol Delete -->
+                        <button class="delete-btn" onclick="confirmAndDelete('${fullPath}')">Delete</button>
                     </td>
                 </tr>
               `;
